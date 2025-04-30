@@ -1,4 +1,3 @@
-![Build Status](https://github.com/rickfast/consul-client/actions/workflows/maven.yml/badge.svg)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.orbitz.consul/consul-client/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.orbitz.consul/consul-client)
 
 Consul Client for Java
@@ -35,19 +34,6 @@ dependencies {
     implementation("com.orbitz.consul:consul-client:1.5.3")
 }
 ```
-
-### Maven:
-
-```xml
-<dependencies>
-    <dependency>
-        <groupId>com.orbitz.consul</groupId>
-        <artifactId>consul-client</artifactId>
-        <version>1.5.3</version>
-    </dependency>
-</dependencies>
-```
-
 
 Basic Usage
 -----------

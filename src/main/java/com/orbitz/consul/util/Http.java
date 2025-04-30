@@ -115,7 +115,8 @@ public class Http {
     @VisibleForTesting
     static <T> ConsulResponse<T> consulResponse(Response<T> response) {
         Headers headers = response.headers();
-        String indexHeaderValue = headers.get("X-Consul-Index");
+        String indexHeaderValue = headers
+                .get("X-Consul-Index");
         String lastContactHeaderValue = headers.get("X-Consul-Lastcontact");
         String knownLeaderHeaderValue = headers.get("X-Consul-Knownleader");
 
