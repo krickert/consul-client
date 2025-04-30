@@ -16,8 +16,6 @@ import org.apache.commons.lang3.time.StopWatch;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.internal.matchers.GreaterOrEqual;
-import org.mockito.internal.matchers.LessOrEqual;
 
 import java.math.BigInteger;
 import java.time.Duration;
@@ -27,8 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-import static org.hamcrest.CoreMatchers.allOf;
-import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -110,10 +106,9 @@ public class ConsulCacheTest {
         CacheConfig cacheConfig = CacheConfig.builder().withBackOffDelay(minDelay, maxDelay).build();
         for (int i=0; i < 1000; i++) {
             long retryDurationMs = ConsulCache.computeBackOffDelayMs(cacheConfig);
-            Assert.assertThat(
-                    String.format("Retry duration expected between %s and %s but got %d ms", minDelay, maxDelay, retryDurationMs),
-                    retryDurationMs,
-                    is(allOf(new GreaterOrEqual<>(minDelay.toMillis()), new LessOrEqual<>(maxDelay.toMillis()))));
+            String message = String.format("Retry duration expected between %s and %s but got %d ms", minDelay, maxDelay, retryDurationMs);
+            Assert.assertTrue(message, retryDurationMs >= minDelay.toMillis());
+            Assert.assertTrue(message, retryDurationMs <= maxDelay.toMillis());
         }
     }
 

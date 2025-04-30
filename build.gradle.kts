@@ -21,7 +21,7 @@ java {
 // Configure annotation processing
 tasks.withType<JavaCompile> {
     // Enable annotation processing
-    options.annotationProcessorGeneratedSourcesDirectory = file("${buildDir}/generated/sources/annotationProcessor/java/${name}")
+    options.annotationProcessorGeneratedSourcesDirectory = layout.buildDirectory.dir("generated/sources/annotationProcessor/java/${name}").get().asFile
 }
 
 repositories {
@@ -76,24 +76,25 @@ dependencies {
 sourceSets {
     main {
         java {
-            srcDir("${buildDir}/generated/sources/annotationProcessor/java/main")
+            srcDir(layout.buildDirectory.dir("generated/sources/annotationProcessor/java/main"))
         }
     }
     test {
         java {
-            srcDir("${buildDir}/generated/sources/annotationProcessor/java/test")
+            srcDir(layout.buildDirectory.dir("generated/sources/annotationProcessor/java/test"))
         }
     }
     create("itest") {
         java {
             srcDir("src/itest/java")
-            srcDir("${buildDir}/generated/sources/annotationProcessor/java/itest")
+            srcDir(layout.buildDirectory.dir("generated/sources/annotationProcessor/java/itest"))
         }
         resources {
             srcDir("src/itest/resources")
         }
-        compileClasspath += sourceSets.main.get().output + configurations.testImplementation.get()
-        runtimeClasspath += sourceSets.main.get().output + configurations.testImplementation.get()
+        // Use the resolvable 'testRuntimeClasspath' configuration instead
+        compileClasspath += sourceSets.main.get().output + configurations.testRuntimeClasspath.get()
+        runtimeClasspath += sourceSets.main.get().output + configurations.testRuntimeClasspath.get()
     }
 }
 
