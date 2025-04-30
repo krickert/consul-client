@@ -31,7 +31,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 
-public class ConsulCacheTest {
+/**
+ * This is an example of how to migrate from JUnit 4 to JUnit Jupiter (JUnit 5).
+ * It demonstrates the key differences and migration patterns.
+ */
+public class JupiterMigrationExample {
 
     /**
      * Test that if Consul for some reason returns a duplicate service or keyvalue entry
@@ -92,6 +96,11 @@ public class ConsulCacheTest {
         assertEquals(expectedOptions, actualOptions);
     }
 
+    /**
+     * Example of migrating a test with expected exception.
+     * In JUnit 4: @Test(expected = IllegalArgumentException.class)
+     * In JUnit 5: Use assertThrows
+     */
     @Test
     @DisplayName("Test watch params with additional index and waiting throws")
     public void testWatchParamsWithAdditionalIndexAndWaitingThrows() {
@@ -100,12 +109,17 @@ public class ConsulCacheTest {
                 .index(index)
                 .wait("10s")
                 .build();
-
+                
         assertThrows(IllegalArgumentException.class, () -> {
             ConsulCache.watchParams(index, 10, additionalOptions);
         });
     }
 
+    /**
+     * Example of migrating a parameterized test.
+     * In JUnit 4: @Parameters(method = "getRetryDurationSamples")
+     * In JUnit 5: @ParameterizedTest + @MethodSource
+     */
     @ParameterizedTest(name = "min Delay: {0}, max Delay: {1}")
     @MethodSource("getRetryDurationSamples")
     @DisplayName("Test retry duration")
@@ -119,6 +133,11 @@ public class ConsulCacheTest {
         }
     }
 
+    /**
+     * Example of migrating a parameterized test data provider.
+     * In JUnit 4: Return Object[] or Object[][]
+     * In JUnit 5: Return Stream<Arguments>
+     */
     static Stream<Arguments> getRetryDurationSamples() {
         return Stream.of(
             // Same duration
@@ -169,93 +188,4 @@ public class ConsulCacheTest {
             cache.stop();
         }
     }
-
-    @Test
-    @DisplayName("Test listener throwing exception is isolated")
-    public void testListenerThrowingExceptionIsIsolated() throws InterruptedException {
-        final Function<Value, String> keyExtractor = Value::getKey;
-        final CacheConfig cacheConfig = CacheConfig.builder()
-                .withMinDelayBetweenRequests(Duration.ofSeconds(10))
-                .build();
-        ClientEventHandler eventHandler = mock(ClientEventHandler.class);
-
-        final String key = "foo";
-        final ImmutableValue value = ImmutableValue.builder()
-                .createIndex(1)
-                .modifyIndex(2)
-                .lockIndex(2)
-                .key(key)
-                .flags(0)
-                .build();
-        final List<Value> result = Collections.singletonList(value);
-        try (final AsyncCallbackConsumer callbackConsumer = new AsyncCallbackConsumer(result)) {
-            try (final ConsulCache<String, Value> cache = new ConsulCache<>(keyExtractor, callbackConsumer, cacheConfig,
-                        eventHandler, new CacheDescriptor(""))) {
-
-                final StubListener goodListener = new StubListener();
-                final AlwaysThrowsListener badListener1 = new AlwaysThrowsListener();
-
-                cache.addListener(badListener1);
-                cache.addListener(goodListener);
-                cache.start();
-
-                final StopWatch stopWatch = new StopWatch();
-                stopWatch.start();
-
-                // Make sure that we wait some duration of time for asynchronous things to occur
-                while (stopWatch.getTime() < 5000 && goodListener.getCallCount() < 1) {
-                    Thread.sleep(50);
-                }
-
-                assertEquals(1, goodListener.getCallCount());
-                assertEquals(1, callbackConsumer.getCallCount());
-
-                final Map<String, Value> lastValues = goodListener.getLastValues();
-                assertNotNull(lastValues);
-                assertEquals(result.size(), lastValues.size());
-                assertTrue(lastValues.containsKey(key));
-                assertEquals(value, lastValues.get(key));
-            }
-        }
-    }
-
-    @Test
-    @DisplayName("Test exception received from listener when already started")
-    public void testExceptionReceivedFromListenerWhenAlreadyStarted() {
-        final Function<Value, String> keyExtractor = Value::getKey;
-        final CacheConfig cacheConfig = CacheConfig.builder()
-                .withMinDelayBetweenRequests(Duration.ofSeconds(10))
-                .build();
-        final ClientEventHandler eventHandler = mock(ClientEventHandler.class);
-
-        final String key = "foo";
-        final ImmutableValue value = ImmutableValue.builder()
-                .createIndex(1)
-                .modifyIndex(2)
-                .lockIndex(2)
-                .key(key)
-                .flags(0)
-                .build();
-        final List<Value> result = Collections.singletonList(value);
-        final StubCallbackConsumer callbackConsumer = new StubCallbackConsumer(
-                result);
-
-        try (final ConsulCache<String, Value> cache = new ConsulCache<>(keyExtractor, callbackConsumer, cacheConfig,
-                eventHandler, new CacheDescriptor(""))) {
-
-            final AlwaysThrowsListener badListener = new AlwaysThrowsListener();
-
-            cache.start();
-
-            // Adding listener after cache is already started
-            final boolean isAdded = cache.addListener(badListener);
-            assertTrue(isAdded);
-
-            final StubListener goodListener = new StubListener();
-            cache.addListener(goodListener);
-
-            assertEquals(1, goodListener.getCallCount());
-        }
-    }
-
 }

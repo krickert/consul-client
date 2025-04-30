@@ -10,13 +10,12 @@ import com.orbitz.consul.config.ClientConfig;
 import com.orbitz.consul.model.kv.ImmutableValue;
 import com.orbitz.consul.model.kv.Value;
 import com.orbitz.consul.monitoring.ClientEventCallback;
-import junitparams.JUnitParamsRunner;
-import junitparams.Parameters;
-import junitparams.naming.TestCaseName;
 import org.apache.commons.lang3.time.StopWatch;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.Arguments;
 import retrofit2.Retrofit;
 import retrofit2.mock.BehaviorDelegate;
 import retrofit2.mock.MockRetrofit;
@@ -27,35 +26,37 @@ import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
-@RunWith(JUnitParamsRunner.class)
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 public class KVCacheTest {
 
-    @Test
-    @Parameters(method = "getKeyValueTestValues")
-    @TestCaseName("wanted {0}, found {1}")
+    @ParameterizedTest(name = "wanted {0}, found {1}")
+    @MethodSource("getKeyValueTestValues")
+    @DisplayName("Check key extractor")
     public void checkKeyExtractor(String rootPath, String input, String expected) {
         //Called in the constructor of the cache, must be use in the test as it may modify rootPath value.
         final String keyPath = KVCache.prepareRootPath(rootPath);
 
         Function<Value, String> keyExtractor = KVCache.getKeyExtractorFunction(keyPath);
-        Assert.assertEquals(expected, keyExtractor.apply(createValue(input)));
+        assertEquals(expected, keyExtractor.apply(createValue(input)));
     }
 
-    public Object getKeyValueTestValues() {
-        return new Object[]{
-                new Object[]{"", "a/b", "a/b"},
-                new Object[]{"/", "a/b", "a/b"},
-                new Object[]{"a", "a/b", "a/b"},
-                new Object[]{"a/", "a/b", "b"},
-                new Object[]{"a/b", "a/b", ""},
-                new Object[]{"a/b", "a/b/", "b/"},
-                new Object[]{"a/b", "a/b/c", "b/c"},
-                new Object[]{"a/b", "a/bc", "bc"},
-                new Object[]{"a/b/", "a/b/", ""},
-                new Object[]{"a/b/", "a/b/c", "c"},
-                new Object[]{"/a/b", "a/b", ""}
-        };
+    static Stream<Arguments> getKeyValueTestValues() {
+        return Stream.of(
+            Arguments.of("", "a/b", "a/b"),
+            Arguments.of("/", "a/b", "a/b"),
+            Arguments.of("a", "a/b", "a/b"),
+            Arguments.of("a/", "a/b", "b"),
+            Arguments.of("a/b", "a/b", ""),
+            Arguments.of("a/b", "a/b/", "b/"),
+            Arguments.of("a/b", "a/b/c", "b/c"),
+            Arguments.of("a/b", "a/bc", "bc"),
+            Arguments.of("a/b/", "a/b/", ""),
+            Arguments.of("a/b/", "a/b/c", "c"),
+            Arguments.of("/a/b", "a/b", "")
+        );
     }
 
     private Value createValue(final String key) {
@@ -70,6 +71,7 @@ public class KVCacheTest {
     }
 
     @Test
+    @DisplayName("Test listener with mock retrofit")
     public void testListenerWithMockRetrofit() throws InterruptedException {
         final Retrofit retrofit = new Retrofit.Builder()
                 // For safety, this is a black hole IP: see RFC 6666
@@ -114,7 +116,7 @@ public class KVCacheTest {
                 Thread.sleep(50);
             }
 
-            Assert.assertEquals(1, goodListener.getCallCount());
+            assertEquals(1, goodListener.getCallCount());
         }
 
     }

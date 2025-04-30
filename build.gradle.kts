@@ -62,9 +62,18 @@ dependencies {
     implementation(libs.slf4j.api)
 
     testImplementation(libs.logback.classic)
+    // JUnit Jupiter dependencies
+    testImplementation(libs.junit.jupiter)
+    testImplementation(libs.junit.jupiter.api)
+    testImplementation(libs.junit.jupiter.params)
+    testRuntimeOnly(libs.junit.jupiter.engine)
+    // JUnit Vintage Engine for running JUnit 4 tests
+    testRuntimeOnly(libs.junit.vintage.engine)
+    // Legacy JUnit 4 dependencies (for backward compatibility during migration)
     testImplementation(libs.junit)
-    testImplementation(libs.mockito.core)
     testImplementation(libs.junitparams)
+
+    testImplementation(libs.mockito.core)
     testImplementation(libs.commons.codec)
     testImplementation(libs.retrofit.mock)
     testImplementation(libs.testcontainers)
@@ -102,10 +111,18 @@ sourceSets {
 dependencies {
     "itestImplementation"(sourceSets.main.get().output)
     "itestImplementation"(sourceSets.test.get().output)
-    // Use specific dependencies instead of configurations
+    // JUnit Jupiter dependencies for integration tests
+    "itestImplementation"(libs.junit.jupiter)
+    "itestImplementation"(libs.junit.jupiter.api)
+    "itestImplementation"(libs.junit.jupiter.params)
+    "itestRuntimeOnly"(libs.junit.jupiter.engine)
+    // JUnit Vintage Engine for running JUnit 4 tests
+    "itestRuntimeOnly"(libs.junit.vintage.engine)
+    // Legacy JUnit 4 dependencies (for backward compatibility during migration)
     "itestImplementation"(libs.junit)
-    "itestImplementation"(libs.mockito.core)
     "itestImplementation"(libs.junitparams)
+
+    "itestImplementation"(libs.mockito.core)
     "itestImplementation"(libs.commons.codec)
     "itestImplementation"(libs.retrofit.mock)
     "itestImplementation"(libs.testcontainers)
@@ -121,6 +138,14 @@ tasks.register<Test>("integrationTest") {
 
     testClassesDirs = sourceSets["itest"].output.classesDirs
     classpath = sourceSets["itest"].runtimeClasspath
+
+    // Use JUnit Platform for running tests
+    useJUnitPlatform()
+}
+
+// Configure the test task to use JUnit Platform
+tasks.test {
+    useJUnitPlatform()
 }
 
 // Create shaded jar

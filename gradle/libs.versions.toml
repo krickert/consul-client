@@ -6,6 +6,7 @@ guava = "33.4.8-jre"
 immutables = "2.10.1"
 jackson = "2.19.0"
 junit = "4.13.2"
+junit-jupiter = "5.10.2"
 junitparams = "1.1.1"
 mockito = "3.12.4"
 retrofit = "2.9.0"
@@ -33,7 +34,14 @@ slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 
 # Test dependencies
 logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
+# JUnit 4 (legacy)
 junit = { module = "junit:junit", version.ref = "junit" }
+# JUnit 5 (Jupiter)
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit-jupiter" }
+junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit-jupiter" }
+junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit-jupiter" }
+junit-jupiter-params = { module = "org.junit.jupiter:junit-jupiter-params", version.ref = "junit-jupiter" }
+junit-vintage-engine = { module = "org.junit.vintage:junit-vintage-engine", version.ref = "junit-jupiter" }
 mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockito" }
 junitparams = { module = "pl.pragmatists:JUnitParams", version.ref = "junitparams" }
 commons-codec = { module = "commons-codec:commons-codec", version.ref = "commons-codec" }
