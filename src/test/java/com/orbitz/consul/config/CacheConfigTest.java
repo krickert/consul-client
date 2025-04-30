@@ -4,12 +4,12 @@ import com.orbitz.consul.cache.CacheDescriptor;
 import com.orbitz.consul.cache.ConsulCache;
 import com.orbitz.consul.model.ConsulResponse;
 import com.orbitz.consul.monitoring.ClientEventHandler;
-import junitparams.JUnitParamsRunner;
-import junitparams.Parameters;
-import junitparams.naming.TestCaseName;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.slf4j.Logger;
 
 import java.math.BigInteger;
@@ -20,15 +20,16 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 
-@RunWith(JUnitParamsRunner.class)
 public class CacheConfigTest {
 
     @Test
@@ -49,12 +50,12 @@ public class CacheConfigTest {
             return null;
         }).when(logger).error(anyString(), any(Throwable.class));
         config.getRefreshErrorLoggingConsumer().accept(logger, null, null);
-        assertTrue("Should have logged as warning", loggedAsWarn.get());
+        assertTrue(loggedAsWarn.get(), "Should have logged as warning");
     }
 
-    @Test
-    @Parameters(method = "getDurationSamples")
-    @TestCaseName("Delay: {0}")
+    @ParameterizedTest(name = "Delay: {0}")
+    @MethodSource("getDurationSamples")
+    @DisplayName("Test override back off delay")
     public void testOverrideBackOffDelay(Duration backOffDelay) {
         CacheConfig config = CacheConfig.builder().withBackOffDelay(backOffDelay).build();
         assertEquals(backOffDelay, config.getMinimumBackOffDelay());
@@ -134,12 +135,12 @@ public class CacheConfigTest {
         assertTrue(loggedAsDebug.get());
     }
 
-    public Object getDurationSamples() {
-        return new Object[]{
-                Duration.ZERO,
-                Duration.ofSeconds(2),
-                Duration.ofMinutes(10)
-        };
+    static Stream<Arguments> getDurationSamples() {
+        return Stream.of(
+                Arguments.of(Duration.ZERO),
+                Arguments.of(Duration.ofSeconds(2)),
+                Arguments.of(Duration.ofMinutes(10))
+        );
     }
 
     @Test
@@ -149,7 +150,7 @@ public class CacheConfigTest {
         try {
             CacheConfig config = CacheConfig.builder().withBackOffDelay(minDelay, maxDelay).build();
             if (!isValid) {
-                Assert.fail(String.format("Should not be able to build cache with min retry delay %d ms and max retry delay %d ms",
+                fail(String.format("Should not be able to build cache with min retry delay %d ms and max retry delay %d ms",
                         minDelay.toMillis(), maxDelay.toMillis()));
             }
             assertEquals(minDelay, config.getMinimumBackOffDelay());
@@ -240,8 +241,8 @@ public class CacheConfigTest {
         public List<Integer> get() {
             if (lastCall != null) {
                 long between = Duration.between(lastCall, LocalTime.now()).toMillis();
-                assertTrue(String.format("expected duration between calls of %d, got %s", expectedInterval.toMillis(), between),
-                        Math.abs(between - expectedInterval.toMillis()) < 20);
+                assertTrue(Math.abs(between - expectedInterval.toMillis()) < 20,
+                        String.format("expected duration between calls of %d, got %s", expectedInterval.toMillis(), between));
             }
             lastCall = LocalTime.now();
             run++;
