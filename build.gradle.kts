@@ -3,6 +3,7 @@ plugins {
     id("org.jetbrains.kotlin.jvm") version "1.9.23"
     id("maven-publish")
     id("signing")
+    id("idea")
 }
 
 group = "com.orbitz.consul"
