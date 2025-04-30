@@ -9,30 +9,29 @@ import com.orbitz.consul.config.CacheConfig;
 import com.orbitz.consul.config.ClientConfig;
 import com.orbitz.consul.model.kv.Value;
 import com.orbitz.consul.Synchroniser;
-import junitparams.JUnitParamsRunner;
-import junitparams.Parameters;
-import junitparams.naming.TestCaseName;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Stream;
 
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@RunWith(JUnitParamsRunner.class)
 public class KVCacheITest extends BaseIntegrationTest {
 
     Consul consulClient;
-    @Before
+    @BeforeEach
     public void before() {
         consulClient = Consul.builder()
                 .withHostAndPort(defaultClientHostAndPort)
@@ -44,6 +43,7 @@ public class KVCacheITest extends BaseIntegrationTest {
     }
 
     @Test
+    @DisplayName("Test node cache KV")
     public void nodeCacheKvTest() throws Exception {
 
         KeyValueClient kvClient = consulClient.keyValueClient();
@@ -89,6 +89,7 @@ public class KVCacheITest extends BaseIntegrationTest {
     }
 
     @Test
+    @DisplayName("Test listeners")
     public void testListeners() throws Exception {
         KeyValueClient kvClient = consulClient.keyValueClient();
         String root = UUID.randomUUID().toString();
@@ -129,6 +130,7 @@ public class KVCacheITest extends BaseIntegrationTest {
     }
 
     @Test
+    @DisplayName("Test late listeners get values")
     public void testLateListenersGetValues() throws Exception {
         KeyValueClient kvClient = consulClient.keyValueClient();
         String root = UUID.randomUUID().toString();
@@ -163,6 +165,7 @@ public class KVCacheITest extends BaseIntegrationTest {
     }
 
     @Test
+    @DisplayName("Test listeners with non-existing keys")
     public void testListenersNonExistingKeys() throws Exception {
         KeyValueClient kvClient = consulClient.keyValueClient();
         String root = UUID.randomUUID().toString();
@@ -183,7 +186,8 @@ public class KVCacheITest extends BaseIntegrationTest {
         assertEquals(0, map.size());
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
+    @DisplayName("Test lifecycle double start throws IllegalStateException")
     public void testLifeCycleDoubleStart() throws Exception {
         KeyValueClient kvClient = consulClient.keyValueClient();
         String root = UUID.randomUUID().toString();
@@ -197,11 +201,14 @@ public class KVCacheITest extends BaseIntegrationTest {
             fail("cache initialization failed");
         }
         assertEquals(ConsulCache.State.started, nc.getState());
-        nc.start();
 
+        assertThrows(IllegalStateException.class, () -> {
+            nc.start();
+        });
     }
 
     @Test
+    @DisplayName("Test lifecycle")
     public void testLifeCycle() throws Exception {
         KeyValueClient kvClient = consulClient.keyValueClient();
         String root = UUID.randomUUID().toString();
@@ -242,6 +249,7 @@ public class KVCacheITest extends BaseIntegrationTest {
     }
 
     @Test
+    @DisplayName("Ensure cache initialization")
     public void ensureCacheInitialization() throws InterruptedException {
         KeyValueClient keyValueClient = consulClient.keyValueClient();
         String key = UUID.randomUUID().toString();
@@ -268,9 +276,9 @@ public class KVCacheITest extends BaseIntegrationTest {
         assertTrue(success.get());
     }
 
-    @Test
-    @Parameters(method = "getBlockingQueriesDuration")
-    @TestCaseName("queries of {0} seconds")
+    @ParameterizedTest(name = "queries of {0} seconds")
+    @MethodSource("getBlockingQueriesDuration")
+    @DisplayName("Check update notifications")
     public void checkUpdateNotifications(int queryDurationSec) throws InterruptedException {
         ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor(
                 new ThreadFactoryBuilder().setDaemon(true).setNameFormat("kvcache-itest-%d").build()
@@ -304,12 +312,11 @@ public class KVCacheITest extends BaseIntegrationTest {
         assertTrue(success.get());
     }
 
-    public Object getBlockingQueriesDuration() {
-        return new Object[]{
-                new Object[]{1},
-                new Object[]{10}
-
-        };
+    static Stream<Arguments> getBlockingQueriesDuration() {
+        return Stream.of(
+                Arguments.of(1),
+                Arguments.of(10)
+        );
     }
 
     private boolean isValueEqualsTo(Map<String, Value> values, String expectedValue) {
