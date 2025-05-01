@@ -2,12 +2,10 @@ package com.orbitz.consul;
 
 import com.orbitz.consul.model.event.Event;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 public class EventITest extends BaseIntegrationTest {
 
@@ -28,7 +26,7 @@ public class EventITest extends BaseIntegrationTest {
             }
         }
 
-        assertTrue(found);
+        Assertions.assertTrue(found);
     }
 
     @Test
@@ -47,10 +45,10 @@ public class EventITest extends BaseIntegrationTest {
             if (event.getName().equals(name) && event.getId().equals(fired.getId())) {
                 found = true;
 
-                assertEquals(payload, event.getPayload().get());
+                Assertions.assertEquals(payload, event.getPayload().get());
             }
         }
 
-        assertTrue(found);
+        Assertions.assertTrue(found);
     }
 }

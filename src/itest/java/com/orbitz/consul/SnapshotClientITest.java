@@ -2,51 +2,52 @@ package com.orbitz.consul;
 
 import com.orbitz.consul.async.Callback;
 import com.orbitz.consul.option.QueryOptions;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.Duration;
-import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class SnapshotClientITest extends BaseIntegrationTest {
 
     private File snapshotFile;
     private SnapshotClient snapshotClient;
 
-    @Before
-    public void setUp() throws IOException {
+    @BeforeEach
+    void setUp() throws IOException {
         snapshotClient = client.snapshotClient();
         snapshotFile = File.createTempFile("snapshot", ".gz");
     }
 
-    @After
-    public void tearDown() {
+    @AfterEach
+    void tearDown() {
         snapshotFile.delete();
     }
 
     @Test
-    public void snapshotClientShouldBeAvailableInConsul() {
+    void snapshotClientShouldBeAvailableInConsul() {
         assertNotNull(snapshotClient);
     }
 
     @Test
-    public void shouldBeAbleToSaveAndRestoreSnapshot() throws MalformedURLException, InterruptedException {
+    void shouldBeAbleToSaveAndRestoreSnapshot() throws MalformedURLException, InterruptedException {
         String serviceName = UUID.randomUUID().toString();
         String serviceId = UUID.randomUUID().toString();
 
         client.agentClient().register(8080, new URL("http://localhost:123/health"), 1000L, serviceName, serviceId,
-                Collections.emptyList(), Collections.emptyMap());
+                List.of(), Map.of());
         Synchroniser.pause(Duration.ofMillis(100));
         assertTrue(checkIfServiceExist(serviceName));
 

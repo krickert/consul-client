@@ -4,30 +4,30 @@ import com.orbitz.consul.model.session.ImmutableSession;
 import com.orbitz.consul.model.session.Session;
 import com.orbitz.consul.model.session.SessionCreatedResponse;
 import com.orbitz.consul.model.session.SessionInfo;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.UUID;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SessionClientITest extends BaseIntegrationTest {
 
     private KeyValueClient keyValueClient;
     private SessionClient sessionClient;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         keyValueClient = client.keyValueClient();
         sessionClient = client.sessionClient();
     }
 
     @Test
-    public void testCreateAndDestroySession() throws Exception {
+    void testCreateAndDestroySession() throws Exception {
         final Session value = ImmutableSession.builder().name("session_" + UUID.randomUUID().toString()).build();
         SessionCreatedResponse session = sessionClient.createSession(value);
         assertNotNull(session);
@@ -36,14 +36,14 @@ public class SessionClientITest extends BaseIntegrationTest {
     }
 
     @Test
-    public void testCreateEmptySession() throws Exception {
+    void testCreateEmptySession() throws Exception {
         SessionCreatedResponse session = sessionClient.createSession(ImmutableSession.builder().build());
         assertNotNull(session);
         sessionClient.destroySession(session.getId());
     }
 
     @Test
-    public void testRenewSession() throws Exception {
+    void testRenewSession() throws Exception {
         final Session value = ImmutableSession.builder().name("session_" + UUID.randomUUID().toString()).build();
 
         SessionCreatedResponse session = sessionClient.createSession(value);
@@ -58,7 +58,7 @@ public class SessionClientITest extends BaseIntegrationTest {
     }
 
     @Test
-    public void testAcquireLock() {
+    void testAcquireLock() {
         String key = UUID.randomUUID().toString();
 
         Session value = ImmutableSession.builder().name("session_" + UUID.randomUUID().toString()).build();
@@ -66,8 +66,7 @@ public class SessionClientITest extends BaseIntegrationTest {
         String valueName = value.getName().get();
 
         try {
-            assertTrue("Should succeed to acquire a lock",
-                    keyValueClient.acquireLock(key, valueName, sessionId));
+            assertTrue(keyValueClient.acquireLock(key, valueName, sessionId), "Should succeed to acquire a lock");
             assertEquals(sessionId, keyValueClient.getSession(key).get());
         } finally {
             keyValueClient.releaseLock(key, sessionId);
@@ -77,7 +76,7 @@ public class SessionClientITest extends BaseIntegrationTest {
     }
 
     @Test
-    public void testAcquireLockTwiceFromSameSession() {
+    void testAcquireLockTwiceFromSameSession() {
         String key = UUID.randomUUID().toString();
 
         Session value = ImmutableSession.builder().name("session_" + UUID.randomUUID().toString()).build();
@@ -85,10 +84,8 @@ public class SessionClientITest extends BaseIntegrationTest {
         String valueName = value.getName().get();
 
         try {
-            assertTrue("Should succeed to acquire a lock - first time",
-                    keyValueClient.acquireLock(key, valueName, sessionId));
-            assertTrue("Should succeed to acquire a lock - second time",
-                    keyValueClient.acquireLock(key, valueName, sessionId));
+            assertTrue(keyValueClient.acquireLock(key, valueName, sessionId), "Should succeed to acquire a lock - first time");
+            assertTrue(keyValueClient.acquireLock(key, valueName, sessionId), "Should succeed to acquire a lock - second time");
             assertEquals(sessionId, keyValueClient.getSession(key).get());
         } finally {
             keyValueClient.releaseLock(key, sessionId);
@@ -98,7 +95,7 @@ public class SessionClientITest extends BaseIntegrationTest {
     }
 
     @Test
-    public void testAcquireLockTwiceFromDifferentSessions() {
+    void testAcquireLockTwiceFromDifferentSessions() {
         String key = UUID.randomUUID().toString();
 
         Session firstSessionValue = ImmutableSession.builder().name("session_" + UUID.randomUUID().toString()).build();
@@ -110,10 +107,8 @@ public class SessionClientITest extends BaseIntegrationTest {
         String secondSessionValueNameContent = secondSessionValue.getName().get();
 
         try {
-            assertTrue("Should succeed to acquire a lock - first session",
-                    keyValueClient.acquireLock(key, firstSessionValueContent, firstSessionId));
-            assertFalse("Should fail to acquire a lock - second session",
-                    keyValueClient.acquireLock(key, secondSessionValueNameContent, secondSessionId));
+            assertTrue(keyValueClient.acquireLock(key, firstSessionValueContent, firstSessionId), "Should succeed to acquire a lock - first session");
+            assertFalse(keyValueClient.acquireLock(key, secondSessionValueNameContent, secondSessionId), "Should fail to acquire a lock - second session");
 
             assertEquals(firstSessionId, keyValueClient.getSession(key).get());
         } finally {
@@ -125,7 +120,7 @@ public class SessionClientITest extends BaseIntegrationTest {
     }
 
     @Test
-    public void testGetSessionInfo() throws Exception {
+    void testGetSessionInfo() throws Exception {
         String key = UUID.randomUUID().toString();
 
         Session value = ImmutableSession.builder().name("session_" + UUID.randomUUID().toString()).build();
@@ -133,8 +128,7 @@ public class SessionClientITest extends BaseIntegrationTest {
         String valueName = value.getName().get();
 
         try {
-            assertTrue("Should succeed to acquire a lock",
-                    keyValueClient.acquireLock(key, valueName, sessionId));
+            assertTrue(keyValueClient.acquireLock(key, valueName, sessionId), "Should succeed to acquire a lock");
 
             SessionInfo sessionInfo = sessionClient.getSessionInfo(sessionId).orElse(null);
             assertNotNull(sessionInfo);
@@ -147,7 +141,7 @@ public class SessionClientITest extends BaseIntegrationTest {
     }
 
     @Test
-    public void testListSessions() throws Exception {
+    void testListSessions() throws Exception {
         String key = UUID.randomUUID().toString();
 
         Session value = ImmutableSession.builder().name("session_" + UUID.randomUUID().toString()).build();

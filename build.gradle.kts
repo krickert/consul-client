@@ -126,6 +126,15 @@ dependencies {
     "itestImplementation"(libs.commons.codec)
     "itestImplementation"(libs.retrofit.mock)
     "itestImplementation"(libs.testcontainers)
+    // https://mvnrepository.com/artifact/org.testcontainers/consul
+    testImplementation("org.testcontainers:consul:1.21.0")
+    "itestImplementation"("org.testcontainers:consul:1.21.0")
+    // Explicitly add Jackson dependencies to ensure consistent versions
+    "itestImplementation"(libs.jackson.annotations)
+    "itestImplementation"(libs.jackson.core)
+    "itestImplementation"(libs.jackson.databind)
+    "itestImplementation"(libs.jackson.datatype.jdk8)
+    "itestImplementation"(libs.jackson.datatype.guava)
     "itestImplementation"(libs.logback.classic)
     "itestCompileOnly"("org.immutables:value:2.10.1")
     "itestAnnotationProcessor"("org.immutables:value:2.10.1")
@@ -146,6 +155,11 @@ tasks.register<Test>("integrationTest") {
 // Configure the test task to use JUnit Platform
 tasks.test {
     useJUnitPlatform()
+}
+
+// Configure the process resources task for itest to handle duplicate resources
+tasks.named<ProcessResources>("processItestResources") {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
 
 // Create shaded jar

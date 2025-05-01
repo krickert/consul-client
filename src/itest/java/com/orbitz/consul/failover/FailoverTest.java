@@ -14,12 +14,11 @@ import com.google.common.net.HostAndPort;
 import com.orbitz.consul.Consul;
 import com.orbitz.consul.Consul.Builder;
 
-@RunWith(JUnitParamsRunner.class)
 public class FailoverTest extends BaseIntegrationTest {
 
 
 	@Test
-	@TestCaseName("Failover Check")
+	@DisplayName("Failover Check")
 	public void TestFailover() throws InterruptedException {
 
 		// Create a set of targets

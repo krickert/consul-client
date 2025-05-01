@@ -11,13 +11,14 @@ import java.util.*;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.junit.Assert.*;
+import org.testcontainers.consul.ConsulContainer;
 import org.testcontainers.containers.GenericContainer;
 
 public class AclTestIgnore {
 
     public static GenericContainer<?> consulContainerAcl;
     static {
-        consulContainerAcl = new GenericContainer<>("consul")
+        consulContainerAcl = new ConsulContainer("hashicorp/consul:latest")
                 .withCommand("agent", "-dev", "-client", "0.0.0.0", "--enable-script-checks=true")
                 .withExposedPorts(8500)
                 .withEnv("CONSUL_LOCAL_CONFIG",
@@ -183,7 +184,7 @@ public class AclTestIgnore {
         AclClient aclClient = client.aclClient();
 
         TokenResponse selfToken = aclClient.readSelfToken();
-        assertThat(selfToken.description(), is("Master Token"));
+        assertThat(selfToken.description(), is("Initial Management Token"));
     }
 
     @Test
@@ -206,7 +207,7 @@ public class AclTestIgnore {
         AclClient aclClient = client.aclClient();
 
         assertTrue(aclClient.listTokens().stream().anyMatch(p -> Objects.equals(p.description(), "Anonymous Token")));
-        assertTrue(aclClient.listTokens().stream().anyMatch(p -> Objects.equals(p.description(), "Master Token")));
+        assertTrue(aclClient.listTokens().stream().anyMatch(p -> Objects.equals(p.description(), "Initial Management Token")));
     }
 
     @Test

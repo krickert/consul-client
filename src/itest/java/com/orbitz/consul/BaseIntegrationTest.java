@@ -3,8 +3,9 @@ package com.orbitz.consul;
 import com.google.common.net.HostAndPort;
 import com.orbitz.consul.config.CacheConfig;
 import com.orbitz.consul.config.ClientConfig;
-import org.junit.After;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.testcontainers.consul.ConsulContainer;
 import org.testcontainers.containers.GenericContainer;
 
 import java.time.Duration;
@@ -19,14 +20,14 @@ public abstract class BaseIntegrationTest {
 
     public static GenericContainer<?> consulContainer;
     static {
-        consulContainer = new GenericContainer<>("consul")
+        consulContainer = new ConsulContainer("hashicorp/consul:latest")
             .withCommand("agent", "-dev", "-client", "0.0.0.0", "--enable-script-checks=true")
             .withExposedPorts(8500);
         consulContainer.start();
     }
     public static GenericContainer<?> consulContainerAcl;
     static {
-        consulContainerAcl = new GenericContainer<>("consul")
+        consulContainerAcl = new ConsulContainer("hashicorp/consul:latest")
             .withCommand("agent", "-dev", "-client", "0.0.0.0", "--enable-script-checks=true")
             .withExposedPorts(8500)
             .withEnv("CONSUL_LOCAL_CONFIG",
@@ -45,18 +46,18 @@ public abstract class BaseIntegrationTest {
 
     protected static HostAndPort defaultClientHostAndPort;
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() {
         defaultClientHostAndPort = HostAndPort.fromParts("localhost", consulContainer.getFirstMappedPort());
         client = Consul.builder()
                 .withHostAndPort(defaultClientHostAndPort)
                 .withClientConfiguration(new ClientConfig(CacheConfig.builder().withWatchDuration(Duration.ofSeconds(1)).build()))
-                .withReadTimeoutMillis(Duration.ofSeconds(2).toMillis())
-                .withWriteTimeoutMillis(Duration.ofMillis(500).toMillis())
+                .withReadTimeoutMillis(Duration.ofSeconds(5).toMillis())
+                .withWriteTimeoutMillis(Duration.ofSeconds(5).toMillis())
                 .build();
     }
 
-    @After
+    @AfterEach
     public void after() {
         deregisterServices.forEach(client.agentClient()::deregister);
         deregisterServices.clear();
