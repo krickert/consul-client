@@ -149,6 +149,8 @@ public class HttpTest {
         Response<String> response = Response.success(expectedBody);
         Call<U> call = mock(Call.class);
         doReturn(response).when(call).execute();
+        Request request = new Request.Builder().url("http://localhost:8500/this/endpoint").build();
+        when(call.request()).thenReturn(request);
 
         httpCall.apply(call);
 
@@ -173,6 +175,8 @@ public class HttpTest {
     private <U, V> void checkFailureEventIsSentWhenRequestFailed(Function<Call<U>, V> httpCall) throws IOException {
         Call<U> call = mock(Call.class);
         doThrow(new IOException("failure")).when(call).execute();
+        Request request = new Request.Builder().url("http://localhost:8500/this/endpoint").build();
+        when(call.request()).thenReturn(request);
 
         try {
             httpCall.apply(call);
@@ -202,6 +206,8 @@ public class HttpTest {
         Response<String> response = Response.error(400, ResponseBody.create(MediaType.parse(""), "failure"));
         Call<U> call = mock(Call.class);
         doReturn(response).when(call).execute();
+        Request request = new Request.Builder().url("http://localhost:8500/this/endpoint").build();
+        when(call.request()).thenReturn(request);
 
         try {
             httpCall.apply(call);
@@ -277,6 +283,8 @@ public class HttpTest {
             }
         };
         Call<String> call = mock(Call.class);
+        Request request = new Request.Builder().url("http://localhost:8500/this/endpoint").build();
+        when(call.request()).thenReturn(request);
         Callback<String> callCallback = http.createCallback(call, callback);
 
         callCallback.onFailure(call, new RuntimeException("the request failed"));

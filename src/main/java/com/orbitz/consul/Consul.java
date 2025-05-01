@@ -72,6 +72,8 @@ public class Consul {
     private final ConnectionPool connectionPool;
     private final OkHttpClient okHttpClient;
 
+    private boolean destroyed = false;
+
     /**
     * Private constructor.
     *
@@ -108,6 +110,16 @@ public class Consul {
         this.okHttpClient.dispatcher().cancelAll();
         this.executorService.shutdownNow();
         this.connectionPool.evictAll();
+        this.destroyed = true;
+    }
+
+    /**
+     * Check whether the internal state has been shut down.
+     *
+     * @return true if {@link #destroy()} was called, otherwise false
+     */
+    public boolean isDestroyed() {
+        return destroyed;
     }
 
     /**
@@ -469,7 +481,7 @@ public class Consul {
 
             return this;
         }
-        
+
         /**
         * Sets the list of hosts to contact if the current request target is
         * unavailable. When the call to a particular URL fails for any reason, the next {@link HostAndPort} specified
@@ -485,10 +497,10 @@ public class Consul {
 
             consulFailoverInterceptor = new ConsulFailoverInterceptor(hostAndPort, blacklistTimeInMillis);
             withHostAndPort(hostAndPort.stream().findFirst().get());
-            
+
             return this;
         }
-        
+
         /**
          * Constructs a failover interceptor with the given {@link ConsulFailoverStrategy}.
          * @param strategy The strategy to use.
@@ -496,7 +508,7 @@ public class Consul {
          */
         public Builder withFailoverInterceptor(ConsulFailoverStrategy strategy) {
         	Preconditions.checkArgument(strategy != null, "Must not provide a null strategy");
-        	
+
         	consulFailoverInterceptor = new ConsulFailoverInterceptor(strategy);
         	return this;
         }
