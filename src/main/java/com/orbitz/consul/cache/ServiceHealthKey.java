@@ -22,7 +22,7 @@ public abstract class ServiceHealthKey {
         return ServiceHealthKey.of(
                 serviceHealth.getService().getId()
                 , serviceHealth.getNode().getAddress()
-                , serviceHealth.getService().getPort()
+                , serviceHealth.getService().getPort().orElse(0)
         );
     }
 

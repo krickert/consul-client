@@ -30,7 +30,7 @@ public abstract class Service {
     @JsonProperty("Tags")
     @JsonDeserialize(as = ImmutableList.class, contentAs = String.class)
     public abstract List<String> getTags();
-    
+
     @JsonProperty("Address")
     public abstract String getAddress();
 
@@ -38,7 +38,7 @@ public abstract class Service {
     public abstract Map<String,String> getMeta();
 
     @JsonProperty("Port")
-    public abstract int getPort();
+    public abstract Optional<Integer> getPort();
 
     @JsonProperty("Weights")
     public abstract Optional<ServiceWeights> getWeights();
